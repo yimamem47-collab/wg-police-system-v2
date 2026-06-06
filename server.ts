@@ -138,7 +138,9 @@ async function startServer() {
         const configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
         const firebaseConfig = JSON.parse(await fs.readFile(configPath, "utf-8"));
         const firebaseApp = initializeApp(firebaseConfig);
-        const db = getFirestore(firebaseApp);
+        const db = firebaseConfig.firestoreDatabaseId 
+          ? getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId)
+          : getFirestore(firebaseApp);
         await addDoc(collection(db, 'community_reports'), {
           reporterName: args.name,
           reporterPhone: args.phone,
@@ -236,6 +238,7 @@ async function startServer() {
 
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.setHeader('Transfer-Encoding', 'chunked');
+      res.setHeader('X-Accel-Buffering', 'no');
 
       // Prep history sequence for Gemini connect (user, model alternating)
       const formattedHistory: any[] = [];
